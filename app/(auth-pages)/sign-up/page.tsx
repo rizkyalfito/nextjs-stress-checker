@@ -12,40 +12,44 @@ export default async function Signup(props: {
   const searchParams = await props.searchParams;
   if ("message" in searchParams) {
     return (
-      <div className="w-full flex-1 flex items-center h-screen sm:max-w-md justify-center gap-2 p-4">
-        <FormMessage message={searchParams} />
+      <div className="w-full flex-1 flex items-center h-screen justify-center p-4">
+        <div className="w-full max-w-full">
+          <FormMessage message={searchParams} />
+        </div>
       </div>
     );
   }
 
   return (
     <>
-      <form className="flex flex-col min-w-64 max-w-64 mx-auto">
-        <h1 className="text-2xl font-medium">Sign up</h1>
+      <form className="w-full flex flex-col max-w-md md:min-w-[400px] mx-auto" method="post">
+        <h1 className="text-2xl font-medium">Daftar</h1>
         <p className="text-sm text text-foreground">
-          Already have an account?{" "}
+          Sudah punya akun?{" "}
           <Link className="text-primary font-medium underline" href="/sign-in">
-            Sign in
+            Masuk
           </Link>
         </p>
         <div className="flex flex-col gap-2 [&>input]:mb-3 mt-8">
           <Label htmlFor="email">Email</Label>
-          <Input name="email" placeholder="you@example.com" required />
-          <Label htmlFor="password">Password</Label>
+          <Input name="email" placeholder="contoh@email.com" required />
+          <Label htmlFor="displayName">Nama</Label>
+          <Input name="displayName" placeholder="Nama anda" required />
+          <Label htmlFor="password">Kata Sandi</Label>
           <Input
             type="password"
             name="password"
-            placeholder="Your password"
+            placeholder="Buat kata sandi"
             minLength={6}
             required
           />
-          <SubmitButton formAction={signUpAction} pendingText="Signing up...">
-            Sign up
+          <SubmitButton formAction={signUpAction} pendingText="Mendaftar...">
+            Daftar
           </SubmitButton>
-          <FormMessage message={searchParams} />
+          <FormMessage message={searchParams}  />
         </div>
       </form>
-      <SmtpMessage />
+      {/* <SmtpMessage /> */}
     </>
   );
 }

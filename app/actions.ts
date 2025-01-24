@@ -8,21 +8,22 @@ import { redirect } from "next/navigation";
 export const signUpAction = async (formData: FormData) => {
   const email = formData.get("email")?.toString();
   const password = formData.get("password")?.toString();
+  const displayName = formData.get("displayName")?.toString();
   const supabase = await createClient();
   const origin = (await headers()).get("origin");
 
   if (!email || !password) {
-    return encodedRedirect(
-      "error",
-      "/sign-up",
-      "Email and password are required",
-    );
+    return encodedRedirect("error", "/sign-up", "Email and password are required");
   }
 
+  // Signup dengan metadata `display_name`
   const { error } = await supabase.auth.signUp({
     email,
     password,
     options: {
+      data: {
+        display_name: displayName,
+      },
       emailRedirectTo: `${origin}/auth/callback`,
     },
   });
@@ -30,13 +31,13 @@ export const signUpAction = async (formData: FormData) => {
   if (error) {
     console.error(error.code + " " + error.message);
     return encodedRedirect("error", "/sign-up", error.message);
-  } else {
-    return encodedRedirect(
-      "success",
-      "/sign-up",
-      "Thanks for signing up! Please check your email for a verification link.",
-    );
   }
+
+  return encodedRedirect(
+    "success",
+    "/sign-up",
+    "Terima kasih sudah mendaftar! Silakan cek email untuk verifikasi akun"
+  );
 };
 
 export const signInAction = async (formData: FormData) => {
