@@ -4,6 +4,7 @@ import { encodedRedirect } from "@/utils/utils";
 import { createClient } from "@/utils/supabase/server";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
+import { PostgrestError } from "@supabase/supabase-js";
 
 export const signUpAction = async (formData: FormData) => {
   const email = formData.get("email")?.toString();
@@ -16,7 +17,6 @@ export const signUpAction = async (formData: FormData) => {
     return encodedRedirect("error", "/sign-up", "Email and password are required");
   }
 
-  // Signup dengan metadata `display_name`
   const { error } = await supabase.auth.signUp({
     email,
     password,
@@ -132,4 +132,64 @@ export const signOutAction = async () => {
   const supabase = await createClient();
   await supabase.auth.signOut();
   return redirect("/sign-in");
+};
+
+
+export const saveTestHistoryAction = async (formData: FormData) => {
+  const supabase = await createClient();
+  
+  const userId = formData.get("userId")?.toString();
+  const totalScore = formData.get("totalScore");
+  const parsedTotalScore = totalScore ? parseInt(totalScore.toString()) : 0;
+  const stressLevel = formData.get("stressLevel")?.toString();
+  const answers = formData.get("answers")?.toString();
+
+  if (!userId || !totalScore || !stressLevel || !answers) {
+    return { error: "Data tidak lengkap" };
+  }
+
+  try {
+    const { data, error } = await supabase
+      .from("history")
+      .insert([
+        {
+          user_id: userId,
+          total_score: parsedTotalScore,
+          stress_level: stressLevel,
+          answer: answers,
+        }
+      ]);
+
+    if (error) {
+      console.error("Supabase error:", error);
+      return { error: "Gagal menyimpan hasil tes" };
+    }
+
+    return { success: true };
+  } catch (error) {
+    console.error("Error saving test history:", error);
+    return { error: "Terjadi kesalahan saat menyimpan hasil tes" };
+  }
+};
+
+export const getTestHistoryAction = async (userId: string) => {
+  const supabase = await createClient();
+
+  try {
+    const { data, error } = await supabase
+      .from("history")
+      .select("*")
+      .eq("user_id", userId)
+      .order("created_at", { ascending: false }); // Menambahkan created_at di tabel akan membantu
+
+    if (error) {
+      console.error("Supabase error:", error);
+      return { error: "Gagal mengambil riwayat tes" };
+    }
+
+    return { data };
+  } catch (error) {
+    console.error("Error fetching test history:", error);
+    return { error: "Terjadi kesalahan saat mengambil riwayat tes" };
+  }
 };

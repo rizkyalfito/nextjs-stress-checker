@@ -1,27 +1,39 @@
-'use client'
-import { useState } from "react";
+'use client';
+import { useState, useEffect } from "react";
 import { FaArrowLeft, FaArrowRight, FaCheck, FaRedo } from "react-icons/fa";
+import questions from "@/utils/test/questions.json";
+import { calculateScore } from "@/utils/test/calculateScore";
+import { saveTestHistoryAction } from "@/app/actions";
+import { createClient } from "@/utils/supabase/client"; // Pastikan diimpor dengan benar
 
-const questions = [
-  "Dalam sebulan terakhir, seberapa sering Anda merasa kesal karena sesuatu yang terjadi secara tak terduga?",
-  "Dalam sebulan terakhir, seberapa sering Anda merasa bahwa Anda tidak dapat mengendalikan hal-hal penting dalam hidup Anda?",
-  "Dalam sebulan terakhir, seberapa sering Anda merasa gugup dan stres?",
-  "Dalam sebulan terakhir, seberapa sering Anda merasa percaya diri dalam menangani masalah pribadi Anda?",
-  "Dalam sebulan terakhir, seberapa sering Anda merasa bahwa segala sesuatunya berjalan sesuai harapan Anda?",
-  "Dalam sebulan terakhir, seberapa sering Anda merasa tidak dapat mengatasi semua hal yang harus Anda lakukan?",
-  "Dalam sebulan terakhir, seberapa sering Anda mampu mengendalikan gangguan dalam hidup Anda?",
-  "Dalam sebulan terakhir, seberapa sering Anda merasa berada di atas segalanya?",
-  "Dalam sebulan terakhir, seberapa sering Anda merasa marah karena hal-hal yang berada di luar kendali Anda?",
-  "Dalam sebulan terakhir, seberapa sering Anda merasa bahwa kesulitan menumpuk begitu tinggi sehingga Anda tidak dapat mengatasinya?"
-];
-
-const scoringReversed = [4, 5, 7, 8]; // Indeks pertanyaan yang perlu dibalik
 const options = ["Tidak Pernah", "Hampir Tidak Pernah", "Kadang-kadang", "Cukup Sering", "Sangat Sering"];
+
+interface TestAnswers {
+  [key: string]: number | null;
+}
+
+interface TestHistory {
+  userId: string;
+  totalScore: number;
+  stressLevel: string;
+  answers: TestAnswers;
+}
 
 export default function Questions() {
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [selectedAnswers, setSelectedAnswers] = useState<number[]>(Array(10).fill(-1));
   const [showResults, setShowResults] = useState(false);
+  const [userId, setUserId] = useState<string | null>(null);
+
+  useEffect(() => {
+    const fetchUserId = async () => {
+      const supabase = createClient();
+      const { data: { user } } = await supabase.auth.getUser();
+      setUserId(user?.id || null);
+    };
+
+    fetchUserId();
+  }, []);
 
   const handleOptionSelect = (index: number) => {
     const newAnswers = [...selectedAnswers];
@@ -41,34 +53,63 @@ export default function Questions() {
     }
   };
 
-  const reverseScore = (score: number): number => {
-    return 4 - score;
-  };
-
-  const calculateScore = (): number => {
-    return selectedAnswers.reduce((total, answer, index) => {
-      if (answer !== -1) {
-        if (scoringReversed.includes(index + 1)) {
-          // Menggunakan aturan pembalikan skor yang benar
-          const reversedScore = [4, 3, 2, 1, 0][answer];
-          return total + reversedScore;
-        } else {
-          return total + answer;
-        }
-      }
-      return total;
-    }, 0);
-  }; 
   const getStressLevel = (score: number): string => {
-    if (score >= 0 && score <= 13) return "Tingkat Stres Rendah";
-    if (score >= 14 && score <= 26) return "Tingkat Stres Sedang";
-    return "Tingkat Stres Tinggi";
+    if (score >= 0 && score <= 13) return "Rendah";
+    if (score >= 14 && score <= 26) return "Sedang";
+    return "Tinggi";
   };
 
   const restartQuiz = () => {
     setCurrentQuestionIndex(0);
     setSelectedAnswers(Array(10).fill(-1));
     setShowResults(false);
+  };
+
+  const convertToFormData = (testHistory: TestHistory): FormData => {
+    const formData = new FormData();
+    formData.append("userId", testHistory.userId);
+    formData.append("totalScore", String(testHistory.totalScore));
+    formData.append("stressLevel", testHistory.stressLevel);
+    formData.append("answers", JSON.stringify(testHistory.answers));
+    return formData;
+  };
+
+  const saveResults = async () => {
+    if (!userId) {
+      alert("User not logged in!");
+      return;
+    }
+  
+    const score = calculateScore(selectedAnswers);
+  
+    const answers: TestAnswers = selectedAnswers.reduce((acc, answer, index) => {
+      acc[`q${index + 1}`] = answer === -1 ? null : answer;
+      return acc;
+    }, {} as TestAnswers);
+  
+    const testHistory: TestHistory = {
+      userId,
+      totalScore: score,
+      stressLevel: getStressLevel(score),
+      answers: answers,
+    };
+  
+    const formData = convertToFormData(testHistory);
+  
+    try {
+      const result = await saveTestHistoryAction(formData);
+      
+      if (result.error) {
+        alert(result.error);
+        return;
+      }
+  
+      setShowResults(true);
+      alert("Hasil tes berhasil disimpan!");
+    } catch (error) {
+      console.error("Error detail:", error);
+      alert("Terjadi kesalahan saat menyimpan hasil tes.");
+    }
   };
 
   return (
@@ -106,7 +147,10 @@ export default function Questions() {
               </button>
             ) : (
               <button
-                onClick={() => setShowResults(true)}
+                onClick={() => {
+                  setShowResults(true);
+                  saveResults();
+                }}
                 className="px-4 py-2 bg-green-600 text-white rounded-md"
               >
                 Kirim <FaCheck className="inline-block ml-2" />
@@ -117,8 +161,8 @@ export default function Questions() {
       ) : (
         <div className="text-center">
           <h1 className="text-2xl font-bold text-gray-800">Quiz Selesai!</h1>
-          <p className="text-lg text-gray-600">Skor Anda: {calculateScore()} / 40</p>
-          <p className="text-lg text-gray-600">{getStressLevel(calculateScore())}</p>
+          <p className="text-lg text-gray-600">Skor Anda: {calculateScore(selectedAnswers)} / 40</p>
+          <p className="text-lg text-gray-600">{getStressLevel(calculateScore(selectedAnswers))}</p>
           <button
             onClick={restartQuiz}
             className="mt-4 px-4 py-2 bg-red-500 text-white rounded-md"
@@ -129,4 +173,4 @@ export default function Questions() {
       )}
     </div>
   );
-};
+}

@@ -3,8 +3,9 @@ import { createClient } from "@/utils/supabase/server";
 import { InfoIcon } from "lucide-react";
 import { redirect } from "next/navigation";
 import AsideHistory from "@/components/aside-history";
+import TestHistory from "@/components/histories";
 
-export default async function ProtectedPage() {
+export default async function HistoryPage() {
   const supabase = await createClient();
 
   const {
@@ -17,16 +18,7 @@ export default async function ProtectedPage() {
 
   return (
     <div className="flex-1 w-full flex flex-col md:flex-row gap-12">
-      <div className="flex-1">
-        <div className="bg-accent text-sm p-3 px-5 rounded-md text-foreground flex gap-3 items-center">
-          <InfoIcon size="16" strokeWidth={2} />
-           Pastikan kamu dalam posisi yang nyaman ya, Selamat mengisi! 
-        </div>
-        <div className="flex flex-col gap-2 items-start mt-4">
-          <Questions />
-        </div>
-      </div>
-      <AsideHistory />
+      <TestHistory />
     </div>
   );
 }
