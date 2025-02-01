@@ -102,7 +102,7 @@ export default function HistoryCard({ id, date, totalScore, stressLevel, answers
           </div>
         </div>
         
-        {/* <div>
+        <div>
           <h4 className="text-gray-700 font-medium mb-3 flex items-center">
             <Activity className="w-4 h-4 mr-2" />
             Detail Jawaban Per Pertanyaan
@@ -127,7 +127,7 @@ export default function HistoryCard({ id, date, totalScore, stressLevel, answers
               );
             })}
           </div>
-        </div> */}
+        </div>
       </div>
     </div>
   );

@@ -1,8 +1,5 @@
-import Questions from "@/components/questions";
 import { createClient } from "@/utils/supabase/server";
-import { InfoIcon } from "lucide-react";
 import { redirect } from "next/navigation";
-import AsideHistory from "@/components/aside-history";
 import TestHistory from "@/components/histories";
 
 export default async function HistoryPage() {
@@ -17,7 +14,7 @@ export default async function HistoryPage() {
   }
 
   return (
-    <div className="flex-1 w-full flex flex-col md:flex-row gap-12">
+    <div className="flex-1 w-full flex md:flex-row gap-12">
       <TestHistory />
     </div>
   );

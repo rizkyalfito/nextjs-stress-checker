@@ -1,10 +1,11 @@
 'use client';
 import { useState, useEffect } from "react";
-import { FaArrowLeft, FaArrowRight, FaCheck, FaRedo } from "react-icons/fa";
+import { FaArrowLeft, FaArrowRight, FaCheck } from "react-icons/fa";
+import { useRouter } from "next/navigation";
 import questions from "@/utils/test/questions.json";
-import { calculateScore } from "@/utils/test/calculateScore";
 import { saveTestHistoryAction } from "@/app/actions";
-import { createClient } from "@/utils/supabase/client"; // Pastikan diimpor dengan benar
+import { createClient } from "@/utils/supabase/client";
+import { calculateScore } from "@/utils/test/calculateScore";
 
 const options = ["Tidak Pernah", "Hampir Tidak Pernah", "Kadang-kadang", "Cukup Sering", "Sangat Sering"];
 
@@ -12,17 +13,10 @@ interface TestAnswers {
   [key: string]: number | null;
 }
 
-interface TestHistory {
-  userId: string;
-  totalScore: number;
-  stressLevel: string;
-  answers: TestAnswers;
-}
-
 export default function Questions() {
+  const router = useRouter();
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [selectedAnswers, setSelectedAnswers] = useState<number[]>(Array(10).fill(-1));
-  const [showResults, setShowResults] = useState(false);
   const [userId, setUserId] = useState<string | null>(null);
 
   useEffect(() => {
@@ -59,43 +53,26 @@ export default function Questions() {
     return "Tinggi";
   };
 
-  const restartQuiz = () => {
-    setCurrentQuestionIndex(0);
-    setSelectedAnswers(Array(10).fill(-1));
-    setShowResults(false);
-  };
-
-  const convertToFormData = (testHistory: TestHistory): FormData => {
-    const formData = new FormData();
-    formData.append("userId", testHistory.userId);
-    formData.append("totalScore", String(testHistory.totalScore));
-    formData.append("stressLevel", testHistory.stressLevel);
-    formData.append("answers", JSON.stringify(testHistory.answers));
-    return formData;
-  };
-
   const saveResults = async () => {
     if (!userId) {
       alert("User not logged in!");
       return;
     }
-  
-    const score = calculateScore(selectedAnswers);
-  
+
+    const totalScore = calculateScore(selectedAnswers);
+    const stressLevel = getStressLevel(totalScore);
+    
     const answers: TestAnswers = selectedAnswers.reduce((acc, answer, index) => {
       acc[`q${index + 1}`] = answer === -1 ? null : answer;
       return acc;
     }, {} as TestAnswers);
-  
-    const testHistory: TestHistory = {
-      userId,
-      totalScore: score,
-      stressLevel: getStressLevel(score),
-      answers: answers,
-    };
-  
-    const formData = convertToFormData(testHistory);
-  
+
+    const formData = new FormData();
+    formData.append("userId", userId);
+    formData.append("totalScore", totalScore.toString());
+    formData.append("stressLevel", stressLevel);
+    formData.append("answers", JSON.stringify(answers));
+
     try {
       const result = await saveTestHistoryAction(formData);
       
@@ -103,9 +80,8 @@ export default function Questions() {
         alert(result.error);
         return;
       }
-  
-      setShowResults(true);
-      alert("Hasil tes berhasil disimpan!");
+
+      router.push('/protected/result');
     } catch (error) {
       console.error("Error detail:", error);
       alert("Terjadi kesalahan saat menyimpan hasil tes.");
@@ -113,64 +89,77 @@ export default function Questions() {
   };
 
   return (
-    <div className="max-w-xl mx-auto p-6 bg-white shadow-md rounded-md">
-      {!showResults ? (
-        <div>
-          <h1 className="text-xl font-semibold text-gray-800">Pertanyaan {currentQuestionIndex + 1}</h1>
-          <h2 className="text-lg text-gray-700 mb-4">{questions[currentQuestionIndex]}</h2>
-          <div className="space-y-2">
-            {options.map((option, index) => (
-              <button
-                key={index}
-                onClick={() => handleOptionSelect(index)}
-                className={`w-full py-2 px-4 text-left border rounded-md ${selectedAnswers[currentQuestionIndex] === index ? 'bg-blue-500 text-white' : 'bg-gray-100 hover:bg-gray-200'}`}
-              >
-                {option}
-              </button>
-            ))}
+    <div className="max-w-2xl mx-auto">
+      <div className="bg-white shadow-lg rounded-2xl p-8">
+        <div className="mb-8">
+          <div className="w-full bg-gray-200 rounded-full h-2 mb-4">
+            <div 
+              className="bg-blue-600 h-2 rounded-full transition-all duration-300"
+              style={{ width: `${((currentQuestionIndex + 1) / questions.length) * 100}%` }}
+            ></div>
           </div>
-          <div className="mt-4 flex justify-between">
+          <span className="text-sm text-gray-600">
+            Pertanyaan {currentQuestionIndex + 1} dari {questions.length}
+          </span>
+        </div>
+
+        <h2 className="text-xl font-semibold text-gray-800 mb-6">
+          {questions[currentQuestionIndex]}
+        </h2>
+
+        <div className="space-y-3">
+          {options.map((option, index) => (
             <button
-              onClick={handlePreviousQuestion}
-              disabled={currentQuestionIndex === 0}
-              className="px-4 py-2 bg-gray-500 text-white rounded-md disabled:opacity-50"
+              key={index}
+              onClick={() => handleOptionSelect(index)}
+              className={`w-full py-4 px-6 text-left border-2 rounded-xl transition-all duration-200 
+                ${selectedAnswers[currentQuestionIndex] === index 
+                  ? 'border-blue-500 bg-blue-50 text-blue-700' 
+                  : 'border-gray-200 hover:border-blue-200 hover:bg-gray-50'}`}
             >
-              <FaArrowLeft className="inline-block mr-2" /> Sebelumnya
+              <div className="flex items-center gap-4">
+                <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center
+                  ${selectedAnswers[currentQuestionIndex] === index 
+                    ? 'border-blue-500' 
+                    : 'border-gray-300'}`}
+                >
+                  {selectedAnswers[currentQuestionIndex] === index && (
+                    <div className="w-3 h-3 bg-blue-500 rounded-full"></div>
+                  )}
+                </div>
+                <span className="text-lg">{option}</span>
+              </div>
             </button>
-            {currentQuestionIndex < questions.length - 1 ? (
-              <button
-                onClick={handleNextQuestion}
-                disabled={selectedAnswers[currentQuestionIndex] === -1}
-                className="px-4 py-2 bg-blue-600 text-white rounded-md disabled:opacity-50"
-              >
-                Selanjutnya <FaArrowRight className="inline-block ml-2" />
-              </button>
-            ) : (
-              <button
-                onClick={() => {
-                  setShowResults(true);
-                  saveResults();
-                }}
-                className="px-4 py-2 bg-green-600 text-white rounded-md"
-              >
-                Kirim <FaCheck className="inline-block ml-2" />
-              </button>
-            )}
-          </div>
+          ))}
         </div>
-      ) : (
-        <div className="text-center">
-          <h1 className="text-2xl font-bold text-gray-800">Quiz Selesai!</h1>
-          <p className="text-lg text-gray-600">Skor Anda: {calculateScore(selectedAnswers)} / 40</p>
-          <p className="text-lg text-gray-600">{getStressLevel(calculateScore(selectedAnswers))}</p>
+
+        <div className="mt-8 flex justify-between">
           <button
-            onClick={restartQuiz}
-            className="mt-4 px-4 py-2 bg-red-500 text-white rounded-md"
+            onClick={handlePreviousQuestion}
+            disabled={currentQuestionIndex === 0}
+            className="px-6 py-3 bg-gray-100 text-gray-700 rounded-xl disabled:opacity-50 hover:bg-gray-200 transition-colors"
           >
-            <FaRedo className="inline-block mr-2" /> Mulai Ulang Quiz
+            <FaArrowLeft className="inline-block mr-2" /> Sebelumnya
           </button>
+
+          {currentQuestionIndex < questions.length - 1 ? (
+            <button
+              onClick={handleNextQuestion}
+              disabled={selectedAnswers[currentQuestionIndex] === -1}
+              className="px-6 py-3 bg-blue-600 text-white rounded-xl disabled:opacity-50 hover:bg-blue-700 transition-colors"
+            >
+              Selanjutnya <FaArrowRight className="inline-block ml-2" />
+            </button>
+          ) : (
+            <button
+              onClick={saveResults}
+              className="px-6 py-3 bg-green-600 text-white rounded-xl hover:bg-green-700 transition-colors"
+            >
+              Selesai <FaCheck className="inline-block ml-2" />
+            </button>
+          )}
         </div>
-      )}
+      </div>
     </div>
   );
 }
