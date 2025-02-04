@@ -4,7 +4,7 @@ import { Button } from "./ui/button";
 
 export default function Hero() {
   return (
-    <div className="flex flex-col gap-12 items-center p-3.5">
+    <div className="flex flex-col gap-12 items-center p-0 pb-7 mb-9">
       <div className="flex gap-8 justify-center items-center">
         <a
           href="https://okocekemanusiaan.org"
@@ -19,20 +19,23 @@ export default function Hero() {
         </a>
       </div>
       <h1 className="sr-only">Supabase and Next.js Starter Template</h1>
-      <p className="text-3xl lg:text-4xl !leading-tight mx-auto max-w-xl text-center">
-        Ketahui tingkat stres anda dengan menggunakan {" "}
+      <p className="text-2xl lg:text-4xl !leading-tight mx-auto max-w-xl text-center">
+        Ketahui tingkat stres anda dengan menggunakan {" "} <br />
         <span className="font-bold">
           Soulution Stress Checker
         </span>
       </p>
       <div className="flex gap-3">
         <Link href={"/protected"}>
-      <Button> Cek Sekarang </Button>
+          <Button> Cek Sekarang </Button>
         </Link>
-      <Button
-      variant={"outline"}>
-         Pelajari Metode 
-      </Button>
+        <Link href={"#pss-info"}>
+          <Button
+          variant={"outline"}
+          className="scroll-smooth">
+            Pelajari Metode 
+          </Button>
+        </Link>
       </div>
     </div>
   );
