@@ -6,6 +6,7 @@ import questions from "@/utils/test/questions.json";
 import { saveTestHistoryAction } from "@/app/actions";
 import { createClient } from "@/utils/supabase/client";
 import { calculateScore } from "@/utils/test/calculateScore";
+import { Loader2 } from "lucide-react";
 
 const options = ["Tidak Pernah", "Hampir Tidak Pernah", "Kadang-kadang", "Cukup Sering", "Sangat Sering"];
 
@@ -18,7 +19,9 @@ export default function Questions() {
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [selectedAnswers, setSelectedAnswers] = useState<number[]>(Array(10).fill(-1));
   const [userId, setUserId] = useState<string | null>(null);
-
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [timeSpent, setTimeSpent] = useState(0);
+  
   useEffect(() => {
     const fetchUserId = async () => {
       const supabase = createClient();
@@ -28,6 +31,7 @@ export default function Questions() {
 
     fetchUserId();
   }, []);
+
 
   const handleOptionSelect = (index: number) => {
     const newAnswers = [...selectedAnswers];
@@ -59,6 +63,8 @@ export default function Questions() {
       return;
     }
 
+    setIsSubmitting(true);
+    
     const totalScore = calculateScore(selectedAnswers);
     const stressLevel = getStressLevel(totalScore);
     
@@ -78,6 +84,7 @@ export default function Questions() {
       
       if (result.error) {
         alert(result.error);
+        setIsSubmitting(false);
         return;
       }
 
@@ -85,11 +92,12 @@ export default function Questions() {
     } catch (error) {
       console.error("Error detail:", error);
       alert("Terjadi kesalahan saat menyimpan hasil tes.");
+      setIsSubmitting(false);
     }
   };
 
   return (
-    <div className="max-w-2xl mx-auto">
+    <div className="max-w-4xl mx-auto">
       <div className="bg-white shadow-lg rounded-2xl p-8">
         <div className="mb-8">
           <div className="w-full bg-gray-200 rounded-full h-2 mb-4">
@@ -103,7 +111,7 @@ export default function Questions() {
           </span>
         </div>
 
-        <h2 className="text-xl font-semibold text-gray-800 mb-6">
+        <h2 className="text-l md:text-xl font-semibold text-gray-800 mb-6">
           {questions[currentQuestionIndex]}
         </h2>
 
@@ -112,9 +120,9 @@ export default function Questions() {
             <button
               key={index}
               onClick={() => handleOptionSelect(index)}
-              className={`w-full py-4 px-6 text-left border-2 rounded-xl transition-all duration-200 
+              className={`w-full py-2 px-2 text-left text-sm border-2 rounded-xl transition-all duration-200 
                 ${selectedAnswers[currentQuestionIndex] === index 
-                  ? 'border-blue-500 bg-blue-50 text-blue-700' 
+                  ? 'border-blue-500 bg-blue-50 text-blue-700 transform scale-[1.02]' 
                   : 'border-gray-200 hover:border-blue-200 hover:bg-gray-50'}`}
             >
               <div className="flex items-center gap-4">
@@ -124,10 +132,10 @@ export default function Questions() {
                     : 'border-gray-300'}`}
                 >
                   {selectedAnswers[currentQuestionIndex] === index && (
-                    <div className="w-3 h-3 bg-blue-500 rounded-full"></div>
+                    <div className="w-3 h-3 bg-blue-500 rounded-full animate-scale"></div>
                   )}
                 </div>
-                <span className="text-lg">{option}</span>
+                <span className="text-l md:text-lg">{option}</span>
               </div>
             </button>
           ))}
@@ -137,25 +145,35 @@ export default function Questions() {
           <button
             onClick={handlePreviousQuestion}
             disabled={currentQuestionIndex === 0}
-            className="px-6 py-3 bg-gray-100 text-gray-700 rounded-xl disabled:opacity-50 hover:bg-gray-200 transition-colors"
+            className="px-4 py-2 lg:px-6 bg-gray-200 text-gray-700 rounded-md text-sm disabled:opacity-50 hover:bg-gray-300 transition-colors flex items-center gap-2"
           >
-            <FaArrowLeft className="inline-block mr-2" /> Sebelumnya
+            <FaArrowLeft /> Sebelumnya
           </button>
 
           {currentQuestionIndex < questions.length - 1 ? (
             <button
               onClick={handleNextQuestion}
               disabled={selectedAnswers[currentQuestionIndex] === -1}
-              className="px-6 py-3 bg-blue-600 text-white rounded-xl disabled:opacity-50 hover:bg-blue-700 transition-colors"
+              className="px-6 py-3 bg-blue-600 text-white rounded-xl text-sm disabled:opacity-50 hover:bg-blue-700 transition-colors flex items-center gap-2"
             >
-              Selanjutnya <FaArrowRight className="inline-block ml-2" />
+              Selanjutnya <FaArrowRight />
             </button>
           ) : (
             <button
               onClick={saveResults}
-              className="px-6 py-3 bg-green-600 text-white rounded-xl hover:bg-green-700 transition-colors"
+              disabled={isSubmitting || selectedAnswers.includes(-1)}
+              className="px-6 py-3 bg-green-600 text-white rounded-xl hover:bg-green-700 transition-colors flex items-center gap-2 disabled:opacity-50"
             >
-              Selesai <FaCheck className="inline-block ml-2" />
+              {isSubmitting ? (
+                <>
+                  <Loader2 className="animate-spin" />
+                  Menyimpan...
+                </>
+              ) : (
+                <>
+                  Selesai <FaCheck />
+                </>
+              )}
             </button>
           )}
         </div>

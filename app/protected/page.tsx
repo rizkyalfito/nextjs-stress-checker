@@ -18,7 +18,7 @@ export default async function ProtectedPage() {
   return (
     <div className="flex-1 w-full flex flex-col md:flex-row gap-12">
       <div className="flex-1">
-        <div className="bg-accent text-sm p-3 px-5 rounded-md text-foreground flex gap-3 items-center">
+        <div className="bg-yellow-300 opacity-65 text-sm p-3 px-5 rounded-md text-foreground flex gap-3 items-center">
           <InfoIcon size="16" strokeWidth={2} />
            Pastikan kamu dalam posisi yang nyaman ya, Selamat mengisi! 
         </div>
@@ -26,7 +26,6 @@ export default async function ProtectedPage() {
           <Questions />
         </div>
       </div>
-      <AsideHistory />
     </div>
   );
 }
