@@ -180,7 +180,7 @@ export const getTestHistoryAction = async (userId: string) => {
       .from("history")
       .select("*")
       .eq("user_id", userId)
-      .order("created_at", { ascending: false }); // Menambahkan created_at di tabel akan membantu
+      .order("created_at", { ascending: false });
 
     if (error) {
       console.error("Supabase error:", error);
