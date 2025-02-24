@@ -41,7 +41,7 @@ export const LineChart: React.FC<LineChartProps> = ({ data }) => {
           />
           <YAxis
             domain={[0, 40]}
-            ticks={[0, 8, 16, 24, 32, 40]} // Divided into 5 equal parts
+            ticks={[0, 8, 16, 24, 32, 40]}
             tick={{ fontSize: 12 }}
             label={{ value: 'Skor Stress', angle: -90, position: 'insideLeft', offset: 0 }}
           />
@@ -52,7 +52,7 @@ export const LineChart: React.FC<LineChartProps> = ({ data }) => {
               borderRadius: '8px',
               padding: '10px'
             }}
-            formatter={(value: number) => [`Skor: ${value}`, 'Tingkat Stress']}
+            formatter={(value: number) => [`Skor: ${value}`]}
             labelFormatter={(label) => `Tanggal: ${label}`}
           />
           <Line

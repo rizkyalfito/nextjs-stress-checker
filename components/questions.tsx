@@ -32,7 +32,6 @@ export default function Questions() {
     fetchUserId();
   }, []);
 
-
   const handleOptionSelect = (index: number) => {
     const newAnswers = [...selectedAnswers];
     newAnswers[currentQuestionIndex] = index;
@@ -102,7 +101,7 @@ export default function Questions() {
         <div className="mb-8">
           <div className="w-full bg-gray-200 rounded-full h-2 mb-4">
             <div 
-              className="bg-blue-600 h-2 rounded-full transition-all duration-300"
+              className="bg-violet-600 h-2 rounded-full transition-all duration-300"
               style={{ width: `${((currentQuestionIndex + 1) / questions.length) * 100}%` }}
             ></div>
           </div>
@@ -122,17 +121,17 @@ export default function Questions() {
               onClick={() => handleOptionSelect(index)}
               className={`w-full py-2 px-2 text-left text-sm border-2 rounded-xl transition-all duration-200 
                 ${selectedAnswers[currentQuestionIndex] === index 
-                  ? 'border-blue-500 bg-blue-50 text-blue-700 transform scale-[1.02]' 
-                  : 'border-gray-200 hover:border-blue-200 hover:bg-gray-50'}`}
+                  ? 'border-violet-500 bg-violet-50 text-violet-700 transform scale-[1.02]' 
+                  : 'border-gray-200 hover:border-violet-200 hover:bg-gray-50'}`}
             >
               <div className="flex items-center gap-4">
                 <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center
                   ${selectedAnswers[currentQuestionIndex] === index 
-                    ? 'border-blue-500' 
+                    ? 'border-violet-500' 
                     : 'border-gray-300'}`}
                 >
                   {selectedAnswers[currentQuestionIndex] === index && (
-                    <div className="w-3 h-3 bg-blue-500 rounded-full animate-scale"></div>
+                    <div className="w-3 h-3 bg-violet-500 rounded-full animate-scale"></div>
                   )}
                 </div>
                 <span className="text-l md:text-lg">{option}</span>
@@ -154,7 +153,7 @@ export default function Questions() {
             <button
               onClick={handleNextQuestion}
               disabled={selectedAnswers[currentQuestionIndex] === -1}
-              className="px-6 py-3 bg-blue-600 text-white rounded-xl text-sm disabled:opacity-50 hover:bg-blue-700 transition-colors flex items-center gap-2"
+              className="px-6 py-3 bg-violet-600 text-white rounded-xl text-sm disabled:opacity-50 hover:bg-violet-700 transition-colors flex items-center gap-2"
             >
               Selanjutnya <FaArrowRight />
             </button>
