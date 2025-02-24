@@ -5,12 +5,10 @@ export default function About() {
   return ( // Tambahkan return di sini
     <Card className="min-w-full">
       <CardHeader>
-        <CardTitle className="text-2xl">Tentang PSS</CardTitle>
-        <CardDescription>Memahami Perceived Stress Scale</CardDescription>
       </CardHeader>
       <CardContent className="grid md:grid-cols-2 gap-8">
         <div className="space-y-4">
-          <h3 className="text-xl font-semibold">Apa itu PSS?</h3>
+          <h3 className="text-2xl font-semibold">Apa itu PSS?</h3>
           <p className="text-gray-600 leading-relaxed">
             PSS adalah instrumen standar yang dikembangkan oleh Sheldon Cohen untuk mengukur tingkat stres yang dirasakan dalam kehidupan seseorang. Metode ini telah divalidasi dan digunakan secara luas dalam penelitian psikologi dan kesehatan mental.
           </p>

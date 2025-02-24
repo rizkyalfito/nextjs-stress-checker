@@ -2,7 +2,6 @@ import Questions from "@/components/questions";
 import { createClient } from "@/utils/supabase/server";
 import { InfoIcon } from "lucide-react";
 import { redirect } from "next/navigation";
-import AsideHistory from "@/components/aside-history";
 
 export default async function ProtectedPage() {
   const supabase = await createClient();
