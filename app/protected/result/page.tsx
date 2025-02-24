@@ -51,7 +51,7 @@ const scoreCategories: Record<string, ScoreCategory> = {
     range: "14-26",
     description: "Tingkat stres Anda berada dalam kategori sedang. Perhatikan faktor pemicu stres dan terapkan teknik relaksasi.",
     color: {
-      bg: "bg-yellow-500",
+      bg: "bg-yellow-500", 
       text: "text-yellow-700",
       gradient: "from-yellow-50 to-yellow-100",
       border: "border-yellow-200"
@@ -113,7 +113,7 @@ export default function HalamanHasil() {
   if (loading) {
     return (
       <div className="flex flex-col items-center justify-center flex-1 py-20">
-        <Loader2 className="w-12 h-12 animate-spin text-blue-500 mb-4" />
+        <Loader2 className="w-12 h-12 animate-spin text-violet-600 mb-4" />
         <p className="text-gray-600 font-medium">Memuat hasil tes...</p>
       </div>
     );
@@ -123,12 +123,12 @@ export default function HalamanHasil() {
     return (
       <div className="flex items-center justify-center flex-1 py-20">
         <div className="text-center bg-white p-8 rounded-xl shadow-sm max-w-md w-full mx-4">
-          <AlertCircle className="w-16 h-16 text-red-500 mx-auto mb-4" />
+          <AlertCircle className="w-16 h-16 text-violet-600 mx-auto mb-4" />
           <h1 className="text-2xl font-bold text-gray-800 mb-4">Data Tidak Ditemukan</h1>
           <p className="text-gray-600 mb-6">Maaf, kami tidak dapat menemukan hasil tes Anda. Silakan mulai tes baru.</p>
           <button
             onClick={() => router.push('/protected')}
-            className="w-full px-6 py-3 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition-all duration-300 flex items-center justify-center gap-2"
+            className="w-full px-6 py-3 bg-violet-600 text-white rounded-xl hover:bg-violet-700 transition-all duration-300 flex items-center justify-center gap-2"
           >
             <FaRedo className="w-4 h-4" />
             Mulai Tes
@@ -153,7 +153,7 @@ export default function HalamanHasil() {
   const currentCategory = scoreCategories[testData.stress_level];
 
   return (
-    <div className="flex-1 w-full bg-gradient-to-br from-blue-50 via-white to-gray-50 py-6">
+    <div className="flex-1 w-full bg-gradient-to-br from-violet-50 via-white to-white py-6">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header */}
         <div className="text-center mb-8">
@@ -168,7 +168,7 @@ export default function HalamanHasil() {
               <span className='text-sm'>{formattedTime}</span>
             </div>
           </div>
-          <div className="h-1 w-32 bg-blue-500 mx-auto mt-2"></div>
+          <div className="h-1 w-32 bg-violet-600 mx-auto mt-2"></div>
         </div>
 
         {/* Main Content Grid */}
@@ -202,7 +202,7 @@ export default function HalamanHasil() {
             {/* Score Analysis */}
             <div className="bg-white rounded-xl shadow-sm p-6">
               <div className="flex items-center gap-3 mb-4">
-                <Info className="w-6 h-6 text-blue-500" />
+                <Info className="w-6 h-6 text-violet-600" />
                 <h3 className="text-xl font-semibold">Analisis Skor</h3>
               </div>
               
@@ -253,14 +253,14 @@ export default function HalamanHasil() {
         <div className="flex flex-col sm:flex-row justify-center gap-4">
           <button
             onClick={() => router.push('/protected')}
-            className="px-6 py-3 bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-lg hover:from-blue-600 hover:to-blue-700 transition-all duration-300 flex items-center justify-center gap-3 shadow-sm hover:shadow-md"
+            className="px-6 py-3 bg-gradient-to-r from-violet-600 to-indigo-600 text-white rounded-lg hover:from-violet-700 hover:to-indigo-700 transition-all duration-300 flex items-center justify-center gap-3 shadow-sm hover:shadow-md"
           >
             <FaRedo className="w-5 h-5" />
             Mulai Tes Baru
           </button>
           <button
             onClick={() => router.push('/protected/history')}
-            className="px-6 py-3 bg-gradient-to-r from-gray-600 to-gray-700 text-white rounded-lg hover:from-gray-700 hover:to-gray-800 transition-all duration-300 flex items-center justify-center gap-3 shadow-sm hover:shadow-md"
+            className="px-6 py-3 border border-violet-200 text-violet-600 hover:bg-violet-50 rounded-lg transition-all duration-300 flex items-center justify-center gap-3 shadow-sm hover:shadow-md"
           >
             <FaChartLine className="w-5 h-5" />
             Lihat Riwayat
