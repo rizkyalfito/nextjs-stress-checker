@@ -54,7 +54,6 @@ export const FormInput = ({
     }
     
     if (validation && validation.patternString) {
-      // Convert string pattern to RegExp on the client side
       const pattern = new RegExp(validation.patternString);
       if (!pattern.test(inputValue)) {
         setError(validation.message || `Format ${label.toLowerCase()} tidak valid`);
@@ -64,7 +63,7 @@ export const FormInput = ({
     }
     
     setError(null);
-    setValid(inputValue.length > 0);
+    setValid(true); // Set valid to true if all checks pass
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {

@@ -61,8 +61,9 @@ export default function TestHistory() {
 
   if (loading) {
     return (
-      <div className="flex justify-center items-center min-h-[400px]">
+      <div className="flex flex-col items-center justify-center flex-1 py-20 min-h-[400px]">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-violet-600"></div>
+        <p className="text-gray-600 font-medium">Memuat riwayat tes...</p>
       </div>
     );
   }
@@ -83,7 +84,7 @@ export default function TestHistory() {
         <AlertCircle className="h-16 w-16 text-violet-600 mb-6" />
         <h2 className="text-2xl font-semibold text-gray-900 mb-2">Data Tidak Ditemukan</h2>
         <p className="text-gray-600 text-center mb-2">
-          Maaf, kami tidak dapat menemukan hasil tes Anda.
+          Maaf, kami tidak dapat menemukan riwayat tes anda, mulai tes untuk melihat riwayat
         </p>
         <p className="text-gray-600 text-center mb-8">
           Silakan mulai tes baru.

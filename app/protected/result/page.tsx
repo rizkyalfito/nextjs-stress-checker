@@ -10,7 +10,8 @@ import {
   Info, 
   Calendar,
   Clock,
-  AlertCircle
+  AlertCircle,
+  RefreshCw
 } from "lucide-react";
 
 interface TestData {
@@ -112,8 +113,8 @@ export default function HalamanHasil() {
 
   if (loading) {
     return (
-      <div className="flex flex-col items-center justify-center flex-1 py-20">
-        <Loader2 className="w-12 h-12 animate-spin text-violet-600 mb-4" />
+      <div className="flex flex-col items-center justify-center flex-1 py-20 min-h-[400px]">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-violet-600"></div>
         <p className="text-gray-600 font-medium">Memuat hasil tes...</p>
       </div>
     );
@@ -124,17 +125,19 @@ export default function HalamanHasil() {
       <div className="flex items-center justify-center flex-1 py-20">
         <div className="text-center bg-white p-8 rounded-xl shadow-sm max-w-md w-full mx-4">
           <AlertCircle className="w-16 h-16 text-violet-600 mx-auto mb-4" />
-          <h1 className="text-2xl font-bold text-gray-800 mb-4">Data Tidak Ditemukan</h1>
-          <p className="text-gray-600 mb-6">Maaf, kami tidak dapat menemukan hasil tes Anda. Silakan mulai tes baru.</p>
+          <h1 className="text-2xl font-bold text-gray-800 mb-4">Belum ada hasil tes</h1>
+          <p className="text-gray-600 mb-6">Maaf, kami tidak dapat menemukan hasil tes. Silakan mulai tes baru.</p>
           <button
             onClick={() => router.push('/protected')}
-            className="w-full px-6 py-3 bg-violet-600 text-white rounded-xl hover:bg-violet-700 transition-all duration-300 flex items-center justify-center gap-2"
+            className="inline-flex items-center px-6 py-3 bg-gradient-to-r from-violet-600 to-indigo-600 text-white rounded-lg hover:from-violet-700 hover:to-indigo-700 transition-all duration-300 gap-2"
           >
-            <FaRedo className="w-4 h-4" />
+            <RefreshCw className="w-4 h-4" />
             Mulai Tes
           </button>
         </div>
       </div>
+
+      
     );
   }
 
@@ -153,7 +156,7 @@ export default function HalamanHasil() {
   const currentCategory = scoreCategories[testData.stress_level];
 
   return (
-    <div className="flex-1 w-full bg-gradient-to-br from-violet-50 via-white to-white py-6">
+    <div className="flex-1 w-full pt-4">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header */}
         <div className="text-center mb-8">
