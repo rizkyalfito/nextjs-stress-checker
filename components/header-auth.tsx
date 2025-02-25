@@ -3,6 +3,13 @@ import { hasEnvVars } from "@/utils/supabase/check-env-vars";
 import Link from "next/link";
 import { Button } from "./ui/button";
 import { createClient } from "@/utils/supabase/server";
+import { 
+  DropdownMenu, 
+  DropdownMenuContent, 
+  DropdownMenuItem, 
+  DropdownMenuTrigger 
+} from "@/components/ui/dropdown-menu";
+import { User } from "lucide-react";
 
 export default async function AuthButton() {
   const supabase = await createClient();
@@ -36,19 +43,44 @@ export default async function AuthButton() {
       </div>
     );
   }
+
   return user ? (
     <div className="flex items-center gap-4">
-      Hey, {
-        (() => {
-          const nameParts = user?.user_metadata?.display_name?.split(" ") || [];
-          return nameParts.length > 1 ? nameParts[1] : nameParts[0] || "User";
-        })()
-      }!
-      <form action={signOutAction}>
-        <Button type="submit" variant="outline" className="border-violet-600 text-violet-600 hover:bg-violet-50">
-          Keluar
-        </Button>
-      </form>
+      <span className="text-gray-700">
+        Hey, {
+          (() => {
+            const nameParts = user?.user_metadata?.display_name?.split(" ") || [];
+            return nameParts.length > 1 ? nameParts[1] : nameParts[0] || "User";
+          })()
+        }!
+      </span>
+      
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <Button 
+            variant="ghost" 
+            size="icon"
+            className="rounded-full hover:bg-violet-50 h-10 w-10"
+          >
+            <User className="h-6 w-6 text-violet-600" />
+          </Button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent align="end" className="border-violet-200 w-48">
+          <DropdownMenuItem className="hover:bg-violet-50 text-gray-700 py-3 text-base">
+            <Link href="/protected/history" className="w-full">Riwayat</Link>
+          </DropdownMenuItem>
+          <DropdownMenuItem className="hover:bg-violet-50 text-gray-700 py-3 text-base">
+            <Link href="/protected/result" className="w-full">Hasil Terbaru</Link>
+          </DropdownMenuItem>
+          <form action={signOutAction} className="w-full">
+            <DropdownMenuItem className="hover:bg-violet-50 text-gray-700 cursor-pointer py-3 text-base" asChild>
+              <button type="submit" className="w-full text-left">
+                Keluar
+              </button>
+            </DropdownMenuItem>
+          </form>
+        </DropdownMenuContent>
+      </DropdownMenu>
     </div>
   ) : (
     <div className="flex gap-2">

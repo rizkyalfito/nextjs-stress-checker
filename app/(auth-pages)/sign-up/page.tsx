@@ -1,8 +1,8 @@
+// server component - remove the 'use client' directive
 import { signUpAction } from "@/app/actions";
 import { FormMessage, Message } from "@/components/form-message";
 import { SubmitButton } from "@/components/submit-button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import { FormInput } from "@/components/input-form";
 import Link from "next/link";
 import Image from "next/image";
 
@@ -48,65 +48,49 @@ export default async function Signup(props: {
             </p>
           </div>
 
-          <form className="w-full flex flex-col gap-4" method="post">
-            <div className="space-y-3">
-              <div>
-                <Label 
-                  htmlFor="email" 
-                  className="text-sm font-medium text-gray-900"
-                >
-                  Email
-                </Label>
-                <Input
-                  name="email"
-                  placeholder="contoh@email.com"
-                  required
-                  className="mt-1 w-full border-violet-200 focus:border-violet-600 focus:ring-violet-600 rounded-md"
-                />
-              </div>
+          {/* Display form message at the top if available */}
+          <FormMessage message={searchParams} />
 
-              <div>
-                <Label 
-                  htmlFor="displayName" 
-                  className="text-sm font-medium text-gray-900"
-                >
-                  Nama
-                </Label>
-                <Input
-                  name="displayName"
-                  placeholder="Nama anda"
-                  required
-                  className="mt-1 w-full border-violet-200 focus:border-violet-600 focus:ring-violet-600 rounded-md"
-                />
-              </div>
+          <form className="w-full flex flex-col gap-6" method="post">
+            <div className="space-y-4">
+              <FormInput
+                name="email"
+                label="Email"
+                type="email"
+                placeholder="contoh@email.com"
+                required
+                validation={{
+                  patternString: "^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$",
+                  message: "Format email tidak valid"
+                }}
+              />
 
-              <div>
-                <Label 
-                  htmlFor="password" 
-                  className="text-sm font-medium text-gray-900"
-                >
-                  Kata Sandi
-                </Label>
-                <Input
-                  type="password"
-                  name="password"
-                  placeholder="Buat kata sandi"
-                  minLength={6}
-                  required
-                  className="mt-1 w-full border-violet-200 focus:border-violet-600 focus:ring-violet-600 rounded-md"
-                />
-              </div>
+              <FormInput
+                name="displayName"
+                label="Nama"
+                placeholder="Nama anda"
+                required
+              />
+
+              <FormInput
+                name="password"
+                label="Kata Sandi"
+                type="password"
+                placeholder="Buat kata sandi"
+                required
+                minLength={6}
+              />
             </div>
 
             <SubmitButton
               formAction={signUpAction}
               pendingText="Mendaftar..."
-              className="w-full bg-violet-600 hover:bg-violet-700 text-white py-2 rounded-md transition-colors mt-2"
+              className="w-full bg-violet-600 hover:bg-violet-700 text-white py-2 rounded-md transition-colors"
             >
               Daftar
             </SubmitButton>
 
-            <p className="text-center text-sm text-gray-600 mt-2">
+            <p className="text-center text-sm text-gray-600">
               Sudah punya akun?{" "}
               <Link
                 href="/sign-in"
@@ -115,8 +99,6 @@ export default async function Signup(props: {
                 Masuk
               </Link>
             </p>
-
-            <FormMessage message={searchParams} />
           </form>
         </div>
       </div>

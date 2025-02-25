@@ -1,8 +1,7 @@
 import { signInAction } from "@/app/actions";
-import { FormMessage, Message } from "@/components/form-message";
+import { FormMessage, Message, SubmitError } from "@/components/form-message";
 import { SubmitButton } from "@/components/submit-button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import { FormInput } from "@/components/input-form";
 import Link from "next/link";
 import Image from "next/image";
 
@@ -25,7 +24,6 @@ export default async function Login(props: { searchParams: Promise<Message> }) {
           />
         </div>
       </div>
-
       {/* Right side - Form */}
       <div className="w-full lg:w-1/2 flex items-center justify-center p-8">
         <div className="w-full max-w-md">
@@ -35,37 +33,29 @@ export default async function Login(props: { searchParams: Promise<Message> }) {
               Silakan masuk untuk mengakses semua fitur
             </p>
           </div>
-
+          {/* Display form message at the top if available */}
+          <FormMessage message={searchParams} />
           <form className="w-full flex flex-col gap-6" method="post">
             <div className="space-y-4">
-              <div>
-                <Label 
-                  htmlFor="email" 
-                  className="text-sm font-medium text-gray-900"
-                >
-                  Email
-                </Label>
-                <Input
-                  name="email"
-                  placeholder="contoh@email.com"
-                  required
-                  className="mt-1 w-full border-violet-200 focus:border-violet-600 focus:ring-violet-600 rounded-md"
-                />
-              </div>
-
-              <div>
-                <Label 
-                  htmlFor="password" 
-                  className="text-sm font-medium text-gray-900"
-                >
-                  Kata Sandi
-                </Label>
-                <Input
-                  type="password"
+              <FormInput
+                name="email"
+                label="Email"
+                type="email"
+                placeholder="contoh@email.com"
+                required
+                validation={{
+                  patternString: "^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$", // Changed to string pattern
+                  message: "Format email tidak valid"
+                }}
+              />
+              <div className="space-y-1">
+                <FormInput
                   name="password"
+                  label="Kata Sandi"
+                  type="password"
                   placeholder="Kata sandi anda"
                   required
-                  className="mt-1 w-full border-violet-200 focus:border-violet-600 focus:ring-violet-600 rounded-md"
+                  minLength={6}
                 />
                 <Link
                   href="/forgot-password"
@@ -75,7 +65,6 @@ export default async function Login(props: { searchParams: Promise<Message> }) {
                 </Link>
               </div>
             </div>
-
             <SubmitButton
               formAction={signInAction}
               pendingText="Masuk..."
@@ -83,18 +72,15 @@ export default async function Login(props: { searchParams: Promise<Message> }) {
             >
               Masuk
             </SubmitButton>
-
             <p className="text-center text-sm text-gray-600">
               Belum punya akun?{" "}
               <Link
                 href="/sign-up"
                 className="font-medium text-violet-600 hover:text-violet-700 underline"
-              >
+                >
                 Daftar
               </Link>
             </p>
-
-            <FormMessage message={searchParams} />
           </form>
         </div>
       </div>

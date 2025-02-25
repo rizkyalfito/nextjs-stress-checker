@@ -153,7 +153,7 @@ export default function Questions() {
             <button
               onClick={handleNextQuestion}
               disabled={selectedAnswers[currentQuestionIndex] === -1}
-              className="px-6 py-3 bg-violet-600 text-white rounded-xl text-sm disabled:opacity-50 hover:bg-violet-700 transition-colors flex items-center gap-2"
+              className="px-6 py-3 bg-violet-600 text-white rounded-md text-sm disabled:opacity-50 hover:bg-violet-700 transition-colors flex items-center gap-2"
             >
               Selanjutnya <FaArrowRight />
             </button>
