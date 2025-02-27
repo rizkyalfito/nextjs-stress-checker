@@ -13,7 +13,6 @@ export default async function Signup(props: {
   
   if ("message" in searchParams) {
     return (
-      
       <div className="w-full flex-1 flex items-center h-screen justify-center p-4">
         <div className="w-full max-w-full">
           <FormMessage message={searchParams} />
