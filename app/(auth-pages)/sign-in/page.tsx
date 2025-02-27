@@ -1,13 +1,64 @@
-import { signInAction } from "@/app/actions";
-import { FormMessage, Message, SubmitError } from "@/components/form-message";
-import { SubmitButton } from "@/components/submit-button";
+"use client";
+
+import { useState } from "react";
+import { FormMessage } from "@/components/form-message";
 import { FormInput } from "@/components/input-form";
 import Link from "next/link";
 import Image from "next/image";
+import { useRouter, useSearchParams } from "next/navigation";
+import { createClient } from "@/utils/supabase/client";
 
-export default async function Login(props: { searchParams: Promise<Message> }) {
-  const searchParams = await props.searchParams;
-  
+export default function Login() {
+  const [errorMessage, setErrorMessage] = useState<string>("");
+  const [isLoading, setIsLoading] = useState(false);
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const message = searchParams.get('message');
+
+  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    setIsLoading(true);
+    setErrorMessage("");
+
+    const form = event.target as HTMLFormElement;
+    const email = (form.elements.namedItem("email") as HTMLInputElement).value;
+    const password = (form.elements.namedItem("password") as HTMLInputElement).value;
+
+    try {
+      // Validasi email
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(email)) {
+        setErrorMessage("Format email tidak valid");
+        setIsLoading(false);
+        return;
+      }
+
+      // Validasi password (minimal tidak boleh kosong)
+      if (!password || password.trim().length === 0) {
+        setErrorMessage("Kata sandi tidak boleh kosong");
+        setIsLoading(false);
+        return;
+      }
+
+      const supabase = createClient();
+      const { error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
+
+      if (error) {
+        setErrorMessage("Email atau password salah!");
+      } else {
+        router.push("/");
+        router.refresh(); // Refresh untuk memperbarui session state
+      }
+    } catch (error) {
+      setErrorMessage("Terjadi kesalahan saat login. Silakan coba lagi.");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   return (
     <div className="flex h-screen overflow-hidden rounded-md">
       {/* Left side - Image */}
@@ -33,9 +84,20 @@ export default async function Login(props: { searchParams: Promise<Message> }) {
               Silakan masuk untuk mengakses semua fitur
             </p>
           </div>
-          {/* Display form message at the top if available */}
-          <FormMessage message={searchParams} />
-          <form className="w-full flex flex-col gap-6" method="post">
+          
+          {/* Display form message from URL params if available */}
+          {message && (
+            <FormMessage message={{ message, type: "error" }} />
+          )}
+          
+          {/* Display client-side validation errors */}
+          {errorMessage && (
+            <div className="bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-md mb-4">
+              {errorMessage}
+            </div>
+          )}
+          
+          <form className="w-full flex flex-col gap-6" onSubmit={handleSubmit}>
             <div className="space-y-4">
               <FormInput
                 name="email"
@@ -44,7 +106,7 @@ export default async function Login(props: { searchParams: Promise<Message> }) {
                 placeholder="contoh@email.com"
                 required
                 validation={{
-                  patternString: "^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$", // Changed to string pattern
+                  patternString: "^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$",
                   message: "Format email tidak valid"
                 }}
               />
@@ -65,19 +127,19 @@ export default async function Login(props: { searchParams: Promise<Message> }) {
                 </Link>
               </div>
             </div>
-            <SubmitButton
-              formAction={signInAction}
-              pendingText="Masuk..."
-              className="w-full bg-violet-600 hover:bg-violet-700 text-white py-2 rounded-md transition-colors"
+            <button
+              type="submit"
+              disabled={isLoading}
+              className="w-full bg-violet-600 hover:bg-violet-700 text-white py-2 rounded-md transition-colors disabled:bg-violet-400"
             >
-              Masuk
-            </SubmitButton>
+              {isLoading ? "Masuk..." : "Masuk"}
+            </button>
             <p className="text-center text-sm text-gray-600">
               Belum punya akun?{" "}
               <Link
                 href="/sign-up"
                 className="font-medium text-violet-600 hover:text-violet-700 underline"
-                >
+              >
                 Daftar
               </Link>
             </p>
