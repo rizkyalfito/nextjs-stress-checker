@@ -50,7 +50,7 @@ export default function Login() {
         setErrorMessage("Email atau password salah!");
       } else {
         router.push("/");
-        router.refresh(); // Refresh untuk memperbarui session state
+        router.refresh();
       }
     } catch (error) {
       setErrorMessage("Terjadi kesalahan saat login. Silakan coba lagi.");
