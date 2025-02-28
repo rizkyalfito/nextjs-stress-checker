@@ -285,36 +285,34 @@ export default function TestHistory() {
           
           <TabsContent value="list">
             <div className="space-y-4">
-              {history.map((item, index) => {
-                let parsedAnswers: Record<string, number>;
-                try {
-                  parsedAnswers = typeof item.answer === 'string' 
-                    ? JSON.parse(item.answer) 
-                    : item.answer;
-                } catch (err) {
-                  console.error('Error parsing answers:', err);
-                  parsedAnswers = {};
-                }
+            {history.map((item, index) => {
+              let parsedAnswers: Record<string, number>;
+              try {
+                parsedAnswers = typeof item.answer === 'string' 
+                  ? JSON.parse(item.answer) 
+                  : item.answer;
+              } catch (err) {
+                console.error('Error parsing answers:', err);
+                parsedAnswers = {};
+              }
 
-                // Removed the isLatest prop since it's not supported by the HistoryCard component
-                return (
-                  <div className={index === 0 ? "relative" : ""}>
-                    {index === 0 && (
-                      <div className="absolute -left-4 top-4 rounded-r-md bg-violet-600 text-white text-xs font-medium py-1 px-2 shadow-sm">
-                        Terbaru
-                      </div>
-                    )}
-                    <HistoryCard
-                      key={item.id}
-                      id={item.id}
-                      date={item.created_at}
-                      totalScore={item.total_score}
-                      stressLevel={item.stress_level}
-                      answers={parsedAnswers}
-                    />
-                  </div>
-                );
-              })}
+              return (
+                <div key={item.id} className={index === 0 ? "relative" : ""}>
+                  {index === 0 && (
+                    <div className="absolute -left-4 top-4 rounded-r-md bg-violet-600 text-white text-xs font-medium py-1 px-2 shadow-sm">
+                      Terbaru
+                    </div>
+                  )}
+                  <HistoryCard
+                    id={item.id}
+                    date={item.created_at}
+                    totalScore={item.total_score}
+                    stressLevel={item.stress_level}
+                    answers={parsedAnswers}
+                  />
+                </div>
+              );
+            })}
             </div>
           </TabsContent>
         </Tabs>
