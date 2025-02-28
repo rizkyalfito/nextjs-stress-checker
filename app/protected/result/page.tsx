@@ -95,7 +95,6 @@ export default function HalamanHasil() {
         .single();
 
       if (error) {
-        console.error('Error mengambil hasil:', error);
         setLoading(false);
         return;
       }
