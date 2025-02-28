@@ -143,7 +143,6 @@ export default function TestHistory() {
             </button>
           </div>
         </div>
-
         {activeView === 'chart' ? (
           <Card>
             <CardContent className="pt-6">
