@@ -193,3 +193,39 @@ export const getTestHistoryAction = async (userId: string) => {
     return { error: "Terjadi kesalahan saat mengambil riwayat tes" };
   }
 };
+
+export const deleteAllTestHistoryAction = async (userId: string) => {
+  const supabase = await createClient();
+
+  try {
+    // Langkah 1: Hitung jumlah record yang akan dihapus (opsional)
+    const { count, error: countError } = await supabase
+      .from("history")
+      .select("*", { count: "exact", head: true })
+      .eq("user_id", userId);
+    
+    if (countError) {
+      console.error("Error counting records:", countError);
+    }
+    
+    // Langkah 2: Lakukan penghapusan tanpa menggunakan select("count")
+    const { error } = await supabase
+      .from("history")
+      .delete()
+      .eq("user_id", userId);
+
+    if (error) {
+      console.error("Supabase error:", error);
+      return { error: "Gagal menghapus riwayat tes", details: error.message };
+    }
+
+    console.log(`Berhasil menghapus riwayat tes untuk user ${userId}`);
+    return { success: true, count: count || 0 };
+  } catch (error: any) {
+    console.error("Error deleting test history:", error);
+    return { 
+      error: "Terjadi kesalahan saat menghapus riwayat tes", 
+      details: error.message || String(error) 
+    };
+  }
+};
