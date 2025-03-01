@@ -6,20 +6,11 @@ import HistoryCard from "@/components/card-history";
 import { createClient } from '@/utils/supabase/client';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { LineChart } from './linechart';
-import { AlertCircle, History, TrendingUp, RefreshCw, Trash2, CheckCircle2, XCircle, Info } from 'lucide-react';
+import { AlertCircle, History, TrendingUp, RefreshCw, Trash2, CheckCircle2, XCircle, Info, Loader2 } from 'lucide-react';
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import Link from 'next/link';
 import { Button } from "@/components/ui/button";
 import { useRouter } from 'next/navigation';
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
-import { Toaster, toast } from "sonner";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 
@@ -41,6 +32,11 @@ export default function TestHistory() {
   const [isDeleting, setIsDeleting] = useState(false);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const router = useRouter();
+
+  const [notification, setNotification] = useState<{
+    type: 'success' | 'error';
+    message: string;
+  } | null>(null);
 
   const fetchHistory = async () => {
     try {
@@ -80,10 +76,22 @@ export default function TestHistory() {
   useEffect(() => {
     fetchHistory();
   }, []);
+  
+  useEffect(() => {
+    if (notification) {
+      const timer = setTimeout(() => {
+        setNotification(null);
+      }, 5000);
+      return () => clearTimeout(timer);
+    }
+  }, [notification]);
 
   const handleDeleteAllHistory = async () => {
     if (!userId) {
-      toast.error("User tidak ditemukan");
+      setNotification({
+        type: 'error',
+        message: 'User tidak ditemukan'
+      });
       return;
     }
 
@@ -96,11 +104,17 @@ export default function TestHistory() {
       
       if (result.error) {
         console.error('Delete error details:', result.details);
-        toast.error(result.error);
+        setNotification({
+          type: 'error',
+          message: `Terjadi kesalahan saat menghapus data: ${result.error}`
+        });
       } else {
         // Reset history list
         setHistory([]);
-        toast.success(`Berhasil menghapus ${result.count || 'semua'} riwayat tes`);
+        setNotification({
+          type: 'success',
+          message: `Berhasil menghapus ${result.count || 'semua'} riwayat tes`
+        });
         
         // Force router refresh to ensure page data is updated
         router.refresh();
@@ -110,7 +124,10 @@ export default function TestHistory() {
       }
     } catch (err: any) {
       console.error('Delete error:', err);
-      toast.error('Terjadi kesalahan saat menghapus data: ' + (err.message || String(err)));
+      setNotification({
+        type: 'error',
+        message: 'Terjadi kesalahan saat menghapus data: ' + (err.message || String(err))
+      });
     } finally {
       setIsDeleting(false);
     }
@@ -174,9 +191,7 @@ export default function TestHistory() {
   }
 
   return (
-    <>
-      <Toaster position="top-center" richColors />
-      
+    <>      
       <div className="max-w-5xl mx-auto space-y-6 px-4 py-6">
         <Card className="mb-6 border-l-4 border-l-violet-600 shadow-md">
           <CardHeader className="pb-2">
@@ -318,51 +333,76 @@ export default function TestHistory() {
         </Tabs>
       </div>
 
-      {/* Delete Confirmation Dialog */}
-      <Dialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
-        <DialogContent className="sm:max-w-md">
-          <DialogHeader>
-            <DialogTitle className="flex items-center gap-2">
-              <Trash2 className="h-5 w-5 text-red-500" />
-              Konfirmasi Penghapusan
-            </DialogTitle>
-            <DialogDescription>
-              Apakah Anda yakin ingin menghapus semua riwayat tes? 
-              <span className="font-semibold block mt-1 text-red-500">Tindakan ini tidak bisa dibatalkan.</span>
-            </DialogDescription>
-          </DialogHeader>
-          <DialogFooter className="flex sm:justify-between mt-6 gap-4 flex-col sm:flex-row">
-            <Button 
-              type="button" 
-              variant="outline" 
-              onClick={() => setShowDeleteDialog(false)}
-              className="w-full sm:w-auto flex items-center gap-2"
+      {showDeleteDialog && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-xl shadow-lg max-w-md w-full p-6">
+            <h3 className="text-xl font-bold text-gray-800 mb-4">Konfirmasi Hapus</h3>
+            <p className="text-gray-600 mb-6">
+              Apakah Anda yakin ingin menghapus semua riwayat tes? Tindakan ini tidak dapat dibatalkan.
+            </p>
+            <div className="flex justify-end gap-3">
+              <button
+                type="button"
+                onClick={() => setShowDeleteDialog(false)}
+                className="px-4 py-2 text-gray-600 border border-gray-300 rounded-lg hover:bg-gray-50"
+                disabled={isDeleting}
+              >
+                Batal
+              </button>
+              <button
+                type="button"
+                onClick={handleDeleteAllHistory}
+                className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 flex items-center gap-2"
+                disabled={isDeleting}
+              >
+                {isDeleting ? (
+                  <>
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                    Menghapus...
+                  </>
+                ) : (
+                  <>
+                    <Trash2 className="w-4 h-4" />
+                    Hapus
+                  </>
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {notification && (
+        <div className="fixed bottom-4 right-4 z-50 max-w-md w-full animate-fade-in-up">
+          <div 
+            className={`${
+              notification.type === 'success' 
+                ? 'bg-green-50 border-green-200 text-green-800' 
+                : 'bg-red-50 border-red-200 text-red-800'
+            } rounded-lg border p-4 shadow-lg flex items-start gap-3`}
+          >
+            {notification.type === 'success' ? (
+              <CheckCircle2 className="w-6 h-6 text-green-500 flex-shrink-0" />
+            ) : (
+              <XCircle className="w-6 h-6 text-red-500 flex-shrink-0" />
+            )}
+            
+            <div className="flex-1">
+              <h3 className="font-medium mb-1">
+                {notification.type === 'success' ? 'Berhasil' : 'Error'}
+              </h3>
+              <p className="text-sm">{notification.message}</p>
+            </div>
+            
+            <button 
+              onClick={() => setNotification(null)}
+              className="text-gray-400 hover:text-gray-500"
             >
-              <XCircle className="h-4 w-4" />
-              Batal
-            </Button>
-            <Button 
-              type="button" 
-              variant="destructive" 
-              onClick={handleDeleteAllHistory}
-              disabled={isDeleting}
-              className="w-full sm:w-auto flex items-center gap-2"
-            >
-              {isDeleting ? (
-                <>
-                  <div className="animate-spin h-4 w-4 border-2 border-white rounded-full border-t-transparent"></div>
-                  Menghapus...
-                </>
-              ) : (
-                <>
-                  <CheckCircle2 className="h-4 w-4" />
-                  Ya, Hapus Semua
-                </>
-              )}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+              <XCircle className="w-5 h-5" />
+            </button>
+          </div>
+        </div>
+      )}
     </>
   );
 }
