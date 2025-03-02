@@ -58,39 +58,48 @@ export const signInAction = async (formData: FormData) => {
 };
 
 export const forgotPasswordAction = async (formData: FormData) => {
-  const email = formData.get("email")?.toString();
-  const supabase = await createClient();
-  const origin = (await headers()).get("origin");
-  const callbackUrl = formData.get("callbackUrl")?.toString();
+  try {
+    const email = formData.get("email")?.toString();
+    const supabase = await createClient();
+    const origin = (await headers()).get("origin");
+    const callbackUrl = formData.get("callbackUrl")?.toString();
 
-  if (!email) {
-    return encodedRedirect("error", "/forgot-password", "Email is required");
-  }
+    if (!email) {
+      return encodedRedirect("error", "/forgot-password", "Email diperlukan");
+    }
 
-  const { error } = await supabase.auth.resetPasswordForEmail(email, {
-    redirectTo: `${origin}/auth/callback?redirect_to=/protected/reset-password`,
-  });
+    // Make sure redirectTo has the full, absolute URL
+    const { error } = await supabase.auth.resetPasswordForEmail(email, {
+      redirectTo: `https://nextjs-stress-checker.vercel.app/auth/callback?redirect_to=/reset-password`,
+    });
 
-  if (error) {
-    console.error(error.message);
+    if (error) {
+      console.error(error.message);
+      return encodedRedirect(
+        "error",
+        "/forgot-password",
+        "Tidak dapat mengatur ulang kata sandi"
+      );
+    }
+
+    if (callbackUrl) {
+      return redirect(callbackUrl);
+    }
+
+    return encodedRedirect(
+      "success",
+      "/forgot-password",
+      "Periksa email Anda untuk link reset kata sandi."
+    );
+  } catch (error) {
+    console.error("Server action error:", error);
     return encodedRedirect(
       "error",
       "/forgot-password",
-      "Could not reset password",
+      "Terjadi kesalahan saat memproses permintaan Anda"
     );
   }
-
-  if (callbackUrl) {
-    return redirect(callbackUrl);
-  }
-
-  return encodedRedirect(
-    "success",
-    "/forgot-password",
-    "Check your email for a link to reset your password.",
-  );
 };
-
 export const resetPasswordAction = async (formData: FormData) => {
   const supabase = await createClient();
 
