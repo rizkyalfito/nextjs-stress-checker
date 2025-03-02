@@ -48,7 +48,7 @@ export default function ForgotPassword() {
       
       // Make sure redirectTo has the full, absolute URL
       const { error } = await supabase.auth.resetPasswordForEmail(email, {
-        redirectTo: `https://nextjs-stress-checker.vercel.app/auth/callback?redirect_to=/reset-password`,
+        redirectTo: `${origin}/auth/callback?redirect_to=/protected/reset-password`,
       });
 
       if (error) {

@@ -119,12 +119,12 @@ export default function Login() {
                   required
                   minLength={6}
                 />
-                <Link
+                {/* <Link
                   href="/forgot-password"
                   className="text-sm text-violet-600 hover:text-violet-700 underline block text-right mt-2"
                 >
                   Lupa Password?
-                </Link>
+                </Link> */}
               </div>
             </div>
             <button
