@@ -101,9 +101,10 @@ export default function Signup() {
 
   return (
     <div className="flex h-screen overflow-hidden rounded-md">
-      {/* Left side - Image */}
       <div className="hidden lg:flex rounded-lg lg:w-1/2 bg-gradient-to-b from-violet-50 to-white relative">
-        <div className="absolute rounded-md inset-0 bg-[linear-gradient(to_right,#8080800a_1px,transparent_1px),linear-gradient(to_bottom,#8080800a_1px,transparent_1px)] bg-[size:14px_24px]" />
+        <div className="absolute rounded-md inset-0 bg-[linear-gradient(to_right,#8080800a_1px,transparent_1px),
+        linear-gradient(to_bottom,#8080800a_1px,transparent_1px)]
+        bg-[size:14px_24px]" />
         <div className="relative rounded-md w-full h-full flex items-center justify-center p-12">
           <Image
             src="/daftar.jpg"
@@ -115,29 +116,23 @@ export default function Signup() {
           />
         </div>
       </div>
-      {/* Right side - Form */}
       <div className="w-full lg:w-1/2 flex items-center justify-center p-8 overflow-y-auto">
         <div className="w-full max-w-md">
           <div className="mb-8">
             <h1 className="text-2xl font-bold text-gray-900">Daftar</h1>
             <p className="text-gray-600 mt-2">
-              Silakan daftar untuk mengakses semua fitur
+              Silakan daftar untuk mengetahui kondisi stres anda
             </p>
           </div>
           
-          {/* Display URL param messages with fixed type */}
           {message && (
             <FormMessage message={{ message, type }} />
           )}
-          
-          {/* Display client-side validation errors */}
           {errorMessage && (
             <div className="bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-md mb-4">
               {errorMessage}
             </div>
           )}
-
-          {/* Display success message */}
           {successMessage && (
             <div className="bg-green-50 border border-green-200 text-green-600 px-4 py-3 rounded-md mb-4">
               {successMessage}

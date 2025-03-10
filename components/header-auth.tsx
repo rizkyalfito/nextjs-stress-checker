@@ -67,6 +67,9 @@ export default async function AuthButton() {
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end" className="border-violet-200 w-48">
           <DropdownMenuItem className="hover:bg-violet-50 text-gray-700 py-3 text-base">
+            <Link href="/protected" className="w-full">Tes</Link>
+          </DropdownMenuItem>
+          <DropdownMenuItem className="hover:bg-violet-50 text-gray-700 py-3 text-base">
             <Link href="/protected/history" className="w-full">Riwayat</Link>
           </DropdownMenuItem>
           <DropdownMenuItem className="hover:bg-violet-50 text-gray-700 py-3 text-base">

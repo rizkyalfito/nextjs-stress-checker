@@ -63,7 +63,8 @@ export default function Login() {
     <div className="flex h-screen overflow-hidden rounded-md">
       {/* Left side - Image */}
       <div className="hidden lg:flex rounded-lg lg:w-1/2 bg-gradient-to-b from-violet-50 to-white relative">
-        <div className="absolute rounded-md inset-0 bg-[linear-gradient(to_right,#8080800a_1px,transparent_1px),linear-gradient(to_bottom,#8080800a_1px,transparent_1px)] bg-[size:14px_24px]" />
+        <div className="absolute rounded-md inset-0 bg-[linear-gradient(to_right,#8080800a_1px,transparent_1px),
+        linear-gradient(to_bottom,#8080800a_1px,transparent_1px)] bg-[size:14px_24px]" />
         <div className="relative rounded-md w-full h-full flex items-center justify-center p-12">
           <Image
             src="/masuk.jpg"
@@ -75,7 +76,6 @@ export default function Login() {
           />
         </div>
       </div>
-      {/* Right side - Form */}
       <div className="w-full lg:w-1/2 flex items-center justify-center p-8">
         <div className="w-full max-w-md">
           <div className="mb-8">
@@ -84,13 +84,9 @@ export default function Login() {
               Silakan masuk untuk mengakses semua fitur
             </p>
           </div>
-          
-          {/* Display form message from URL params if available */}
           {message && (
             <FormMessage message={{ message, type: "error" }} />
           )}
-          
-          {/* Display client-side validation errors */}
           {errorMessage && (
             <div className="bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-md mb-4">
               {errorMessage}

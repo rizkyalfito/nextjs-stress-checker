@@ -17,47 +17,32 @@ export const signUpAction = async (formData: FormData) => {
   if (!email || !password) {
     return encodedRedirect("error", "/sign-up", "Email dan kata sandi diperlukan");
   }
-
   // Email validation
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
   if (!emailRegex.test(email)) {
     return encodedRedirect("error", "/sign-up", "Format email tidak valid");
   }
-
   // Password validation
   if (password.length < 6) {
     return encodedRedirect("error", "/sign-up", "Kata sandi minimal harus 6 karakter");
   }
-
   try {
-    // First, check if the email already exists
-    // Method 1: Try to get user by email
+
     const { data: userData, error: userError } = await supabase.auth.admin.getUserById(email);
-    
-    // If we found a user, the email is already registered
-    if (userData?.user) {
+        if (userData?.user) {
       return encodedRedirect("error", "/sign-up", "Email sudah terdaftar. Silakan gunakan email lain.");
     }
-
-    // If Method 1 doesn't work (e.g., no admin access), try Method 2
     if (userError) {
-      // Alternative approach: Try to sign in with a dummy password
-      // This will tell us if the user exists without exposing sensitive info
       const { error: signInError } = await supabase.auth.signInWithPassword({
         email,
         password: "dummy-password-that-will-never-match",
       });
-
-      // If error is "Invalid login credentials", user exists but password is wrong
-      // If error is "Email not confirmed", user exists but hasn't confirmed email
       if (signInError && 
          (signInError.message.includes("Invalid login credentials") || 
           signInError.message.includes("Email not confirmed"))) {
         return encodedRedirect("error", "/sign-up", "Email sudah terdaftar. Silakan gunakan email lain.");
       }
     }
-
-    // Proceed with signup
     const { error } = await supabase.auth.signUp({
       email,
       password,
@@ -70,14 +55,12 @@ export const signUpAction = async (formData: FormData) => {
     });
 
     if (error) {
-      // Check specifically for email already registered error
       if (error.message.includes("already registered") || 
           error.message.includes("already exists") || 
           error.message.includes("already taken") ||
           error.status === 400) {
         return encodedRedirect("error", "/sign-up", "Email sudah terdaftar. Silakan gunakan email lain.");
-      }
-      
+      }      
       console.error(error.code + " " + error.message);
       return encodedRedirect("error", "/sign-up", error.message);
     }
