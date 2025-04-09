@@ -7,13 +7,19 @@ import Link from "next/link";
 import Image from "next/image";
 import { useRouter, useSearchParams } from "next/navigation";
 import { createClient } from "@/utils/supabase/client";
+import { Eye, EyeOff } from 'lucide-react';
 
 export default function Login() {
   const [errorMessage, setErrorMessage] = useState<string>("");
   const [isLoading, setIsLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
   const router = useRouter();
   const searchParams = useSearchParams();
   const message = searchParams.get('message');
+
+  const togglePasswordVisibility = () => {
+    setShowPassword(!showPassword);
+  };
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -107,14 +113,27 @@ export default function Login() {
                 }}
               />
               <div className="space-y-1">
-                <FormInput
-                  name="password"
-                  label="Kata Sandi"
-                  type="password"
-                  placeholder="Kata sandi anda"
-                  required
-                  minLength={6}
-                />
+                <div className="relative">
+                  <FormInput
+                    name="password"
+                    label="Kata Sandi"
+                    type={showPassword ? "text" : "password"}
+                    placeholder="Kata sandi anda"
+                    required
+                    minLength={6}
+                  />
+                  <button 
+                    type="button"
+                    className="absolute right-0 top-9 -mr-8 text-gray-500 hover:text-gray-700 focus:outline-none"
+                    onClick={togglePasswordVisibility}
+                  >
+                    {showPassword ? (
+                      <EyeOff size={20} />
+                    ) : (
+                      <Eye size={20} />
+                    )}
+                  </button>
+                </div>
                 {/* <Link
                   href="/forgot-password"
                   className="text-sm text-violet-600 hover:text-violet-700 underline block text-right mt-2"
