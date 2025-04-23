@@ -1,7 +1,7 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { FaRedo, FaChartLine, FaTrash } from "react-icons/fa";
+import { useState, useEffect, useRef } from 'react';
+import { FaRedo, FaChartLine, FaTrash, FaFilePdf } from "react-icons/fa";
 import { useRouter } from 'next/navigation';
 import { createClient } from "@/utils/supabase/client";
 import { 
@@ -14,8 +14,11 @@ import {
   RefreshCw,
   Trash2,
   CheckCircle,
-  XCircle
+  XCircle,
+  FileDown,
+  Download
 } from "lucide-react";
+import { Button } from '@/components/ui/button';
 
 interface TestData {
   id: number;
@@ -82,6 +85,10 @@ export default function HalamanHasil() {
   const [deleteLoading, setDeleteLoading] = useState(false);
   const [showConfirmDelete, setShowConfirmDelete] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [pdfLoading, setPdfLoading] = useState(false);
+  
+  // Reference for the content to be printed
+  const pdfRef = useRef<HTMLDivElement>(null);
   
   // New state for notifications
   const [notification, setNotification] = useState<{
@@ -149,9 +156,6 @@ export default function HalamanHasil() {
       return;
     }
     
-    // // Tampilkan semua field yang ada di testData
-    // console.log("Field-field data tes:", Object.keys(testData));
-    
     // Periksa test_id terlebih dahulu, karena sepertinya ini adalah ID yang benar
     const recordId = testData.test_id;
     
@@ -216,6 +220,66 @@ export default function HalamanHasil() {
     }
   };
 
+  // Function to generate and download PDF
+  const handleDownloadPDF = async () => {
+    try {
+      setPdfLoading(true);
+      
+      // Dynamically import the html2pdf library
+      const html2pdf = (await import('html2pdf.js')).default;
+      
+      if (!pdfRef.current) {
+        throw new Error("Content reference not found");
+      }
+      
+      // Temporarily make the PDF content visible
+      pdfRef.current.classList.remove('hidden');
+      pdfRef.current.classList.add('pdf-generation');
+      
+      const opt = {
+        margin: 10,
+        filename: `Hasil_Tes_Stres_${formattedDate}.pdf`,
+        image: { type: 'jpeg', quality: 0.98 },
+        html2canvas: { scale: 2, useCORS: true },
+        jsPDF: { 
+          unit: 'mm', 
+          format: 'a4', 
+          orientation: 'portrait' as 'portrait' | 'landscape' 
+        }
+      };
+      
+      // Create and download the PDF
+      const pdf = html2pdf().from(pdfRef.current).set(opt);
+      await pdf.save();
+      
+      // Hide the PDF content again after generation
+      pdfRef.current.classList.add('hidden');
+      pdfRef.current.classList.remove('pdf-generation');
+      
+      // Show success notification
+      setNotification({
+        type: 'success',
+        message: 'PDF berhasil diunduh'
+      });
+      
+    } catch (err) {
+      console.error("PDF generation error:", err);
+      // Show error notification
+      setNotification({
+        type: 'error',
+        message: 'Gagal mengunduh PDF'
+      });
+      
+      // Make sure we re-hide the content even if there was an error
+      if (pdfRef.current) {
+        pdfRef.current.classList.add('hidden');
+        pdfRef.current.classList.remove('pdf-generation');
+      }
+    } finally {
+      setPdfLoading(false);
+    }
+  };
+
   if (loading) {
     return (
       <div className="flex flex-col items-center justify-center flex-1 py-20 min-h-[400px]">
@@ -261,87 +325,196 @@ export default function HalamanHasil() {
   return (
     <div className="flex-1 w-full pt-4">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        {/* Header */}
-        <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 mb-3">Hasil Tes Stres</h1>
-          <div className="flex items-center justify-center gap-6 text-gray-600">
-            <div className="flex items-center gap-2">
-              <Calendar className="w-5 h-5" />
-              <span className='text-sm'>{formattedDate}</span>
+        <div className="web-view">
+          <div className="text-center mb-8">
+            <h1 className="text-3xl font-bold text-gray-900 mb-3">Hasil Tes Stres</h1>
+            <div className="flex items-center justify-center gap-6 text-gray-600">
+              <div className="flex items-center gap-2">
+                <Calendar className="w-5 h-5" />
+                <span className='text-sm'>{formattedDate}</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <Clock className="w-5 h-5" />
+                <span className='text-sm'>{formattedTime}</span>
+              </div>
             </div>
-            <div className="flex items-center gap-2">
-              <Clock className="w-5 h-5" />
-              <span className='text-sm'>{formattedTime}</span>
+            <div className="h-1 w-32 bg-violet-600 mx-auto mt-2"></div>
+          </div>
+
+          {/* Main Content Grid */}
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 mb-8">
+            {/* Score Card */}
+            <div className="lg:col-span-4">
+              <div className="bg-white rounded-xl shadow-sm p-6 text-center">
+                <div className="relative mb-6">
+                  <div className={`w-40 h-40 mx-auto rounded-full ${getScoreColor(testData.stress_level)} bg-opacity-10 flex items-center justify-center`}>
+                    <div className={`w-32 h-32 rounded-full ${getScoreColor(testData.stress_level)} bg-opacity-20 flex items-center justify-center`}>
+                      <div className={`w-20 h-20 rounded-full ${getScoreColor(testData.stress_level)} flex items-center justify-center`}>
+                        <span className="text-4xl font-bold text-white">
+                          {testData.total_score}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="absolute -bottom-4 left-1/2 transform -translate-x-1/2">
+                    <Award className={`w-10 h-10 ${currentCategory.color.text}`} />
+                  </div>
+                </div>
+                <h2 className="text-xl font-semibold mb-3">Tingkat Stres</h2>
+                <span className={`text-lg font-bold px-6 py-2 rounded-full bg-gradient-to-r ${currentCategory.color.gradient} ${currentCategory.color.text}`}>
+                  {testData.stress_level}
+                </span>
+              </div>
+            </div>
+
+            {/* Information Cards */}
+            <div className="lg:col-span-8 space-y-6">
+              {/* Score Analysis */}
+              <div className="bg-white rounded-xl shadow-sm p-6">
+                <div className="flex items-center gap-3 mb-4 justify-between">
+                  <div className='flex items-center gap-3 mb-4'>
+                    <Info className="w-6 h-6 text-violet-600" />
+                    <h3 className="text-xl font-semibold">Analisis Skor</h3>
+                  </div>
+                  <Button 
+                    onClick={handleDownloadPDF} 
+                    disabled={pdfLoading}
+                    className="bg-violet-600 hover:bg-violet-700 text-white"
+                  >
+                    {pdfLoading ? (
+                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                    ) : (
+                      <Download className="w-4 h-4 mr-2" />
+                    )}
+                    Export PDF
+                  </Button>
+                </div>
+
+                
+                
+                <div className="space-y-6">
+                  {/* Score Bar */}
+                  <div>
+                    <div className="flex justify-between text-sm text-gray-600 mb-2">
+                      <span className="font-medium">Skor Anda</span>
+                      <span className="font-bold">{testData.total_score}/40</span>
+                    </div>
+                    <div className="h-5 bg-gray-100 rounded-full overflow-hidden">
+                      <div 
+                        className={`h-full ${getScoreColor(testData.stress_level)} transition-all duration-1000`}
+                        style={{ width: `${(testData.total_score / 40) * 100}%` }}
+                      ></div>
+                    </div>
+                  </div>
+
+                  {/* Description */}
+                  <div className={`p-4 rounded-lg border ${currentCategory.color.border} bg-gradient-to-br ${currentCategory.color.gradient}`}>
+                    <p className={`text-base ${currentCategory.color.text}`}>
+                      {currentCategory.description}
+                    </p>
+                  </div>
+
+                  {/* Scale Categories */}
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    {Object.values(scoreCategories).map((category) => (
+                      <div 
+                        key={category.label}
+                        className={`p-4 rounded-lg bg-gradient-to-br ${category.color.gradient} transform hover:scale-105 transition-transform duration-300`}
+                      >
+                        <div className={`font-semibold text-base ${category.color.text} mb-1`}>
+                          {category.label}
+                        </div>
+                        <div className={`${category.color.text} text-sm font-medium`}>
+                          {category.range}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
-          <div className="h-1 w-32 bg-violet-600 mx-auto mt-2"></div>
         </div>
 
-        {/* Main Content Grid */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 mb-8">
-          {/* Score Card */}
-          <div className="lg:col-span-4">
-            <div className="bg-white rounded-xl shadow-sm p-6 text-center">
-              <div className="relative mb-6">
-                <div className={`w-40 h-40 mx-auto rounded-full ${getScoreColor(testData.stress_level)} bg-opacity-10 flex items-center justify-center`}>
+        {/* Tampilan PDF  */}
+        <div ref={pdfRef} className="hidden gap-1 text-sm leading-snug">
+          {/* Header */}
+          <div className="mb-4">
+            <div className="flex justify-center gap-4 items-center mb-2">
+              <img src="/ook.WEBP" alt="OK OCE Kemanusiaan Logo" className="h-12 object-contain" />
+              <img src="/ooi.png" alt="OK OCE Indonesia Logo" className="h-12 object-contain" />
+            </div>
+
+            <div className="text-center">
+              <h1 className="text-xl font-bold text-gray-900 mb-1">HASIL TES TINGKAT STRES</h1>
+              <h3 className="text-sm text-gray-600 mb-2">Program Kesehatan Mental OK OCE Kemanusiaan</h3>
+              <div className="h-1 w-24 bg-violet-600 mx-auto mb-3"></div>
+            </div>
+
+            <div className="flex items-center justify-center gap-4 text-gray-600 mt-2">
+              <div className="flex items-center gap-1">
+                <Calendar className="w-4 h-4" />
+                <span className="text-xs">{formattedDate}</span>
+              </div>
+              <div className="flex items-center gap-1">
+                <Clock className="w-4 h-4" />
+                <span className="text-xs">{formattedTime}</span>
+              </div>
+            </div>
+          </div>
+
+          {/* Score Display */}
+          <div className="flex justify-center mb-4">
+            <div className="bg-white rounded-lg shadow-sm p-4 text-center max-w-xs">
+              <div className="relative mb-4">
+                <div className={`w-36 h-36 mx-auto rounded-full ${getScoreColor(testData.stress_level)} bg-opacity-10 flex items-center justify-center`}>
                   <div className={`w-32 h-32 rounded-full ${getScoreColor(testData.stress_level)} bg-opacity-20 flex items-center justify-center`}>
-                    <div className={`w-20 h-20 rounded-full ${getScoreColor(testData.stress_level)} flex items-center justify-center`}>
-                      <span className="text-4xl font-bold text-white">
-                        {testData.total_score}
-                      </span>
+                    <div className={`w-24 h-24 rounded-full ${getScoreColor(testData.stress_level)} flex items-center justify-center`}>
+                      <span className="text-4xl font-bold text-white ">{testData.total_score}</span>
                     </div>
                   </div>
                 </div>
-                <div className="absolute -bottom-4 left-1/2 transform -translate-x-1/2">
-                  <Award className={`w-10 h-10 ${currentCategory.color.text}`} />
+                <div className="absolute -bottom-3 left-1/2 transform -translate-x-1/2">
+                  <Award className={`w-8 h-8 ${currentCategory.color.text}`} />
                 </div>
               </div>
-              <h2 className="text-xl font-semibold mb-3">Tingkat Stres</h2>
-              <span className={`text-lg font-bold px-6 py-2 rounded-full bg-gradient-to-r ${currentCategory.color.gradient} ${currentCategory.color.text}`}>
+              <h2 className="text-base font-semibold mb-2">Tingkat Stres</h2>
+              <span className={`text-lg font-semibold px-3 py-1 rounded-full ${currentCategory.color.gradient} ${currentCategory.color.text}`}>
                 {testData.stress_level}
               </span>
             </div>
           </div>
 
-          {/* Information Cards */}
-          <div className="lg:col-span-8 space-y-6">
-            {/* Score Analysis */}
-            <div className="bg-white rounded-xl shadow-sm p-6">
-              <div className="flex items-center gap-3 mb-4">
-                <Info className="w-6 h-6 text-violet-600" />
-                <h3 className="text-xl font-semibold">Analisis Skor</h3>
+          {/* Analysis */}
+          <div className="mb-4">
+            <div className="bg-white rounded-lg shadow-sm p-4">
+              <div className="flex items-center gap-2 mb-2">
+                <Info className="w-5 h-5 text-violet-600" />
+                <h3 className="text-base font-semibold">Analisis Skor</h3>
               </div>
-              
-              <div className="space-y-6">
-                {/* Score Bar */}
+
+              <div className="space-y-4">
+                {/* Skor */}
                 <div>
-                  <div className="flex justify-between text-sm text-gray-600 mb-2">
-                    <span className="font-medium">Skor Anda</span>
-                    <span className="font-bold">{testData.total_score}/40</span>
+                  <div className="flex justify-between text-xs text-gray-600 mb-2">
+                    <span className="font-medium text-lg ">Skor Anda</span>
+                    <span className="font-bold text-lg">{testData.total_score}/40</span>
                   </div>
-                  <div className="h-5 bg-gray-100 rounded-full overflow-hidden">
-                    <div 
-                      className={`h-full ${getScoreColor(testData.stress_level)} transition-all duration-1000`}
-                      style={{ width: `${(testData.total_score / 40) * 100}%` }}
-                    ></div>
+                  <div className="h-3 bg-gray-100 rounded-full overflow-hidden">
+                    <div className={`h-full ${getScoreColor(testData.stress_level)}`} style={{ width: `${(testData.total_score / 40) * 100}%` }}></div>
                   </div>
                 </div>
 
-                {/* Description */}
-                <div className={`p-4 rounded-lg border ${currentCategory.color.border} bg-gradient-to-br ${currentCategory.color.gradient}`}>
-                  <p className={`text-base ${currentCategory.color.text}`}>
-                    {currentCategory.description}
-                  </p>
+                {/* Deskripsi */}
+                <div className={`p-3 mb-3 rounded-lg border ${currentCategory.color.border} bg-gradient-to-br ${currentCategory.color.gradient}`}>
+                  <p className={`text-sm ${currentCategory.color.text}`}>{currentCategory.description}</p>
                 </div>
 
-                {/* Scale Categories */}
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {/* Skala Kategori */}
+                <div className="grid grid-cols-2 gap-3">
                   {Object.values(scoreCategories).map((category) => (
-                    <div 
-                      key={category.label}
-                      className={`p-4 rounded-lg bg-gradient-to-br ${category.color.gradient} transform hover:scale-105 transition-transform duration-300`}
-                    >
-                      <div className={`font-semibold text-base ${category.color.text} mb-1`}>
+                    <div key={category.label} className={`p-2 rounded-lg bg-gradient-to-br ${category.color.gradient}`}>
+                      <div className={`font-semibold text-sm ${category.color.text} mb-1`}>
                         {category.label}
                       </div>
                       <div className={`${category.color.text} text-sm font-medium`}>
@@ -353,7 +526,24 @@ export default function HalamanHasil() {
               </div>
             </div>
           </div>
+
+          {/* Disclaimer */}
+          <div className="mb-3">
+            <div className="bg-gray-50 border-l-4 border-violet-600 p-3 rounded">
+              <h4 className="font-semibold text-sm text-gray-800 mb-1">Penting Diketahui</h4>
+              <p className="text-xs text-gray-600">
+                Hasil ini sebagai langkah awal menyadari kondisi stres Anda. Bukan pengganti diagnosis profesional. Jika gejala berlanjut, konsultasikan dengan psikolog.
+              </p>
+            </div>
+          </div>
+
+          {/* Footer */}
+          <div className="text-center text-gray-500 text-xs pt-2 border-t border-gray-200 mt-12">
+            <p>© {new Date().getFullYear()} OK OCE Kemanusiaan - Program Kesehatan Mental</p>
+            <p>Di bawah naungan OK OCE Indonesia</p>
+          </div>
         </div>
+
 
         {/* Action Buttons */}
         <div className="flex flex-col sm:flex-row justify-center gap-4 mb-6">
@@ -464,5 +654,6 @@ export default function HalamanHasil() {
         </div>
       )}
     </div>
+    
   );
 }
